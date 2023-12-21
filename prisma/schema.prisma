@@ -1,11 +1,49 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model Users {
+  id        Int      @id @default(autoincrement()) @map("id")
+  email     String   @unique @map("email")
+  password  String   @map("password")
+  role      Role     @default(STUDENT) @map("role")
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  questions Questions[]
+  answers   Answers[]
+}
+
+model Questions {
+  id          Int      @id @default(autoincrement()) @map("id")
+  userId      Int      @unique @map("userId")
+  user        Users    @relation(fields: [userId], references: [id])
+  title       String   @map("title")
+  description String   @map("description")
+  createdAt   DateTime @default(now()) @map("createdAt")
+  updatedAt   DateTime @updatedAt @map("updatedAt")
+
+  answers Answers[]
+}
+
+model Answers {
+  id          Int       @id @default(autoincrement()) @map("id")
+  userId      Int       @unique @map("userId")
+  user        Users     @relation(fields: [userId], references: [id])
+  questionsId Int       @unique @map("questionId")
+  question    Questions @relation(fields: [questionsId], references: [id])
+  description String    @map("description")
+  status      String    @default("unpicked") @map("status")
+  createdAt   DateTime  @default(now()) @map("createdAt")
+  updatedAt   DateTime  @updatedAt @map("updatedAt")
+}
+
+enum Role {
+  STUDENT
+  MANAGER
 }
